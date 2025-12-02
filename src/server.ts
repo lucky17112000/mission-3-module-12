@@ -173,6 +173,29 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
     });
   }
 });
+app.delete("/todos/:id", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`DELETE FROM todos WHERE id=$1`, [
+      req.params.id,
+    ]);
+    if (result.rowCount === 0) {
+      res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "User Deleted Success Fully",
+      });
+    }
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
 
 //todos crud
 
@@ -196,11 +219,67 @@ app.post("/todos", async (req: Request, res: Response) => {
 app.get("/todos", async (req: Request, res: Response) => {
   try {
     const result = await pool.query(`SELECT * FROM todos`);
+    console.log(result);
+
     res.status(200).json({
       success: true,
       message: "todos Retrived successfully",
       data: result.rows,
     });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+      detailes: err,
+    });
+  }
+});
+
+app.get("/todos/:id", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`SELECT* FROM todos WHERE id= $1`, [
+      req.params.id,
+    ]);
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "User Not found",
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "User fetched Successfully",
+        data: result.rows[0],
+      });
+    }
+  } catch (err: any) {
+    res.status(500).json({
+      success: true,
+      message: err.message,
+    });
+  }
+});
+
+app.put("/todos/:id", async (req: Request, res: Response) => {
+  try {
+    const { is_completed } = req.body;
+    const result = await pool.query(
+      `UPDATE todos SET is_completed=$1 WHERE id=$2 RETURNING *`,
+      [is_completed, req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "User Not Found",
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "User Update SuccessFully",
+        detailes: result.rows[0],
+      });
+    }
   } catch (err: any) {
     res.status(500).json({
       success: false,
