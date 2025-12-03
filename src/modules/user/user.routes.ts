@@ -10,7 +10,7 @@ router.post("/", userControllers.createUser);
 
 //all user
 
-router.get("/", auth(), userControllers.getuser);
+router.get("/", auth("admin"), userControllers.getuser);
 router.get("/:id", userControllers.getSingleuser);
 router.put("/:id", userControllers.updateUser);
 router.delete("/:id", userControllers.deleteUser);

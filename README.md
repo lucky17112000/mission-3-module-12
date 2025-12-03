@@ -480,3 +480,7 @@ Server secret key দিয়ে signature verify করে
 Header: কোন algorithm, কোন ধরনের token
 Payload: :user info, claims
 Signature: token valid কিনা check করে
+
+work flow:
+
+![alt text](<WhatsApp Image 2025-12-03 at 5.00.15 PM.jpeg>)

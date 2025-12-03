@@ -6,7 +6,7 @@ import config from "../config";
 import { AuthRequest } from "../types/express";
 
 // roles = ["admin", "user"]
-const auth = () => {
+const auth = (...roles: string[]) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization;
@@ -17,11 +17,17 @@ const auth = () => {
         token,
         config.jwtSecret as string
       ) as JwtPayload;
-      // console.log({ decoded });
+      console.log({ decoded });
       req.user = decoded;
       console.log("from user", req.user);
 
       //["admin"]
+
+      if (roles.length && !roles.includes(decoded.role as string)) {
+        return res
+          .status(403)
+          .json({ message: "Your Are not allowed to access this resource" });
+      }
 
       next();
     } catch (err: any) {
