@@ -394,3 +394,89 @@ Token-টিতেই user-এর info encoded থাকে।
 
 npm install jsonwebtoken
 npm install -D @types/jsonwebtoken
+
+এই JWT টোকেনটাকে আমরা ৩ ভাগে ভাগ করে ব্যাখ্যা করবো। JWT সর্বদা তিন ভাগে থাকে:
+
+HEADER.PAYLOAD.SIGNATURE
+
+আপনার টোকেন:
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+.
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0
+.
+KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+
+✅ 1️⃣ HEADER (এনকোড করা JSON):
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+Decode করলে JSON data এমন হবে:
+
+{
+"alg": "HS256",
+"typ": "JWT"
+}
+
+👉 ব্যাখ্যা:
+
+alg → কোন algorithm দিয়ে signature করা হয়েছে
+এখানে "HS256" = HMAC SHA-256
+
+typ → টোকেনের টাইপ = "JWT"
+
+➡️ এই অংশ browser/server কে বলে দেয় JWT কিভাবে verify হবে।
+
+✅ 2️⃣ PAYLOAD (User data / Claims):
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0
+
+Decode করলে JSON:
+
+{
+"sub": "1234567890",
+"name": "John Doe",
+"admin": true,
+"iat": 1516239022
+}
+
+এগুলোকে বলা হয় claims (user-এর তথ্য)।
+
+👉 ব্যাখ্যা:
+
+sub = subject (usually user ID)
+
+name = user name
+
+admin = true (user admin কিনা)
+
+iat = issued at (token কবে তৈরি হয়েছে, UNIX timestamp)
+
+➡️ এই অংশে user-এর তথ্য থাকে (but sensitive data নয়)
+➡️ এই অংশ encoded কিন্তু encrypted না, তাই যে কেউ decode করতে পারে।
+
+✅ 3️⃣ SIGNATURE (verify করার জন্য):
+KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+
+👉 ব্যাখ্যা:
+
+Signature তৈরি হয়:
+
+HMACSHA256(
+base64UrlEncode(header) + "." + base64UrlEncode(payload),
+SECRET_KEY
+)
+
+এটা token কে protect করে।
+
+Purpose:
+
+কেউ টোকেন পরিবর্তন করলে signature match হবে না → token invalid
+
+Server secret key দিয়ে signature verify করে
+
+➡️ এই অংশ decode করা যায় না (এটা hashing)।
+
+🔥 মোট কথা:
+অংশ কাজ
+Header: কোন algorithm, কোন ধরনের token
+Payload: :user info, claims
+Signature: token valid কিনা check করে
