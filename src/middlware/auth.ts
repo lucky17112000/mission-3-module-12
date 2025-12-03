@@ -1,22 +1,36 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import config from "../config";
+// higher order function  return korbe function k
 
-//higer order function it return a function
+import { NextFunction, Response, Request } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import config from "../config";
+import { AuthRequest } from "../types/express";
+
+// roles = ["admin", "user"]
 const auth = () => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization;
-    // console.log("auth token", token);
-    //verify token here
-    if (!token) {
-      return res.status(401).json({
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const token = req.headers.authorization;
+      if (!token) {
+        return res.status(500).json({ message: "You are not allowed!!" });
+      }
+      const decoded = jwt.verify(
+        token,
+        config.jwtSecret as string
+      ) as JwtPayload;
+      // console.log({ decoded });
+      req.user = decoded;
+      console.log("from user", req.user);
+
+      //["admin"]
+
+      next();
+    } catch (err: any) {
+      res.status(500).json({
         success: false,
-        message: "you are not allowed",
+        message: err.message,
       });
     }
-    const decode = jwt.verify(token, config.jwtSecret as string);
-    console.log("decoded : ", decode);
-    next();
   };
 };
+
 export default auth;
